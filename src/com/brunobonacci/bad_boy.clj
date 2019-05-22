@@ -79,14 +79,14 @@
 (defn find-and-kill-one
   [asg ec2 filters]
   (let [groups (auto-scaling-groups asg filters)
-        ists (mapcat :Instances groups)]
-    (println "Found: " (map :AutoScalingGroupName groups))
-    (if (= 0 (count ists))
-      (println "There is nothing to do here. :-(")
-      (->> (rand-nth ists)
-         :InstanceId
-         vector
-         (kill-instances ec2)))))
+        group  (rand-nth groups)
+        ists   (:Instances group)
+        target (if (= 0 (count ists)) nil (-> (rand-nth ists) :InstanceId))]
+    (printf "[kill1] Found %d groups\n" (count groups))
+    (printf "[kill1] Selected group: %s\n" (:AutoScalingGroupName group))
+    (printf "[kill1] Selected target: %s\n" (or target "There is nothing to do here. :-(, lucky one!"))
+    (when target
+      (kill-instances ec2 [target]))))
 
 
 
