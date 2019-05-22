@@ -1,5 +1,5 @@
-(defproject com.brunobonacci/bad-boy "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+(defproject com.brunobonacci/bad-boy (-> "./resources/bad-boy.version" slurp .trim)
+  :description "A chaos testing and infrastructure hardening tool."
 
   :url "https://github.com/BrunoBonacci/bad-boy"
 
@@ -19,13 +19,18 @@
 
   :jvm-opts ["-server"]
 
+  :bin {:name "bad-boy"
+        :jvm-opts ["-server" "$JVM_OPTS" "-Dfile.encoding=utf-8"]}
+
   :main com.brunobonacci.bad-boy
 
-  :profiles {:dev {:dependencies [[midje "1.9.8"]
+  :profiles {:uberjar {:aot :all}
+             :dev {:dependencies [[midje "1.9.8"]
                                   [org.clojure/test.check "0.10.0-alpha4"]
                                   [criterium "0.4.5"]
                                   [org.slf4j/slf4j-log4j12 "1.8.0-beta4"]]
                    :resource-paths ["dev-resources"]
-                   :plugins      [[lein-midje "3.2.1"]]}}
+                   :plugins      [[lein-midje "3.2.1"]
+                                  [lein-binplus "0.6.5"]]}}
 
   )
