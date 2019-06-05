@@ -15,6 +15,15 @@
 (def dry-run (atom (System/getenv "DRY_RUN")))
 
 
+(defn aws-request
+  [client request]
+  (let [response (aws/invoke client request)]
+    (when (-> response :Response :Errors :Error)
+      (throw (ex-info (-> response :Response :Errors :Error :Message)
+                      (-> response :Response :Errors))))
+    response))
+
+
 
 (defn tags-map
   [tags & {:keys [key-prefix] :or {key-prefix nil}}]
@@ -62,9 +71,9 @@
   [asg filters]
   (->>
    ((lazy-query :NextToken :AutoScalingGroups)
-    #(aws/invoke asg
-                 (cond-> {:op :DescribeAutoScalingGroups}
-                   % (assoc :NextToken %))))
+    #(aws-request asg
+                  (cond-> {:op :DescribeAutoScalingGroups :request {:MaxRecords 100}}
+                    % (assoc-in [:request :NextToken] %))))
    (filter filters)
    (map #(select-keys % [:AutoScalingGroupName :MinSize :MaxSize :DesiredCapacity :Instances :Tags]))
    (map #(update % :Tags tags-map))))
@@ -73,7 +82,7 @@
 
 (defn kill-instances [ec2 instance-ids]
   (println (if @dry-run "[DRY-RUN]" "[ACTION]") "KILLING:" instance-ids)
-  (prn (aws/invoke ec2 {:op :TerminateInstances :request {:InstanceIds instance-ids :DryRun @dry-run}})))
+  (prn (aws-request ec2 {:op :TerminateInstances :request {:InstanceIds instance-ids :DryRun @dry-run}})))
 
 
 (defn rand-nth [c]
