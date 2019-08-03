@@ -7,7 +7,7 @@
   (:gen-class))
 
 ;;(def creds (credentials/system-property-credentials-provider))
-
+;;(reset! dry-run 1)
 
 
 (def ec2 (aws/client {:api :ec2}))
@@ -74,9 +74,9 @@
     #(aws-request asg
                   (cond-> {:op :DescribeAutoScalingGroups :request {:MaxRecords 100}}
                     % (assoc-in [:request :NextToken] %))))
-   (filter filters)
    (map #(select-keys % [:AutoScalingGroupName :MinSize :MaxSize :DesiredCapacity :Instances :Tags]))
-   (map #(update % :Tags tags-map))))
+   (map #(update % :Tags tags-map))
+   (filter filters)))
 
 
 
@@ -88,6 +88,7 @@
 (defn rand-nth [c]
   (when (> (count c) 0)
     (clojure.core/rand-nth c)))
+
 
 (defn find-and-kill-one
   [asg ec2 filters]
@@ -131,8 +132,10 @@
   [& asg-names]
   (header asg-names)
   (if-not (seq asg-names)
-    (println "[no-op] No target selected, please provide a list of regex for autoscaling groups to target.!")
-    (let [filters (where
-                   (cons :or
-                         (map (fn [g] [:AutoScalingGroupName :MATCHES? g]) asg-names)))]
+    (println "[no-op] No target selected, please provide a list of regex for autoscaling groups to target, or use --default-selection !")
+    (let [filters (if (= "--default-selection" (first asg-names))
+                    (where (comp :chaos-testing :Tags) :is? "opt-in")
+                    (where
+                     (cons :or
+                           (map (fn [g] [:AutoScalingGroupName :MATCHES? g]) asg-names))))]
       (find-and-kill-one asg ec2 filters))))

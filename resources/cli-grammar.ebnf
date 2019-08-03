@@ -1,0 +1,18 @@
+command          = atom? (<ws> atom)*
+<atom>           = global-options | target
+
+<global-options> = global-option ( <ws> global-option )*
+<global-option>  = help | version | dryrun
+help             = <'-h'> | <'--help'>
+version          = <'-v'> | <'--version'>
+dryrun           = <'--dryrun'> | <'--dry-run'>
+
+target           = (target-name / tag)
+target-name      = glob
+                 
+tag              = <'tag:'> tag-name <'='> tag-value
+tag-name         = #'[a-zA-Z0-9_-]+'
+tag-value        = (<"'"> #"[^\']*" <"'">) | (<'"'> #'[^\"]*' <'"'>) | #'[a-zA-Z0-9_-]+'
+
+<glob>           = #'[a-zA-Z][a-zA-Z0-9*?_-]+'
+<ws>             = #'\s+'
