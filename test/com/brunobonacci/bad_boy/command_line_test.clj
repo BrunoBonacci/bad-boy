@@ -28,7 +28,7 @@
 (facts
  "targets: by name"
 
- (parse-options "prefix-*")   => {:target {:target-name "prefix-*"}}
+ (parse-options "prefix-*")   => {:targets [{:target-name "prefix-*"}]}
 
  )
 
@@ -37,8 +37,8 @@
 (facts
  "targets: by tag"
 
- (parse-options "tag:Chaos-testing=opt-in") => {:target {:tag {"Chaos-testing" "opt-in"}}}
- (parse-options "tag:SomeTagName='some value'") => {:target {:tag {"SomeTagName" "some value"}}}
+ (parse-options "tag:Chaos-testing=opt-in") => {:targets [{:tag {"Chaos-testing" "opt-in"}}]}
+ (parse-options "tag:SomeTagName='some value'") => {:targets [{:tag {"SomeTagName" "some value"}}]}
 
  )
 
@@ -47,6 +47,20 @@
 (facts
  "targets: by presets"
 
- (parse-options "--default-selection") => {:target {:preset :default-selection}}
+ (parse-options "--default-selection") => {:targets [{:preset :default-selection}]}
+
+ )
+
+
+(facts
+ "multiple targets:"
+
+ (parse-options "--default-selection very unlucky* people tag:application=web-server")
+ => {:targets
+    [{:preset :default-selection}
+     {:target-name "very"}
+     {:target-name "unlucky*"}
+     {:target-name "people"}
+     {:tag {"application" "web-server"}}]}
 
  )
