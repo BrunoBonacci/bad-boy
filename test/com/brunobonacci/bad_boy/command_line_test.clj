@@ -41,3 +41,12 @@
  (parse-options "tag:SomeTagName='some value'") => {:target {:tag {"SomeTagName" "some value"}}}
 
  )
+
+
+
+(facts
+ "targets: by presets"
+
+ (parse-options "--default-selection") => {:target {:preset :default-selection}}
+
+ )

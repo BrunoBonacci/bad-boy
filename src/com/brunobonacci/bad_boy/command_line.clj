@@ -19,6 +19,7 @@
        :target-name  #(array-map :target-name %)
        :tag (fn [[_ k] [_ v]] {:tag {k v}})
 
+       :preset  (fn [[p]] {:preset p})
        :command (fn [& args] (into {} args))
        })))
 
@@ -27,3 +28,4 @@
 ;;(parse-options "-h --version unlucky*-test")
 ;;(parse-options "unlucky* --dryrun")
 ;;(parse-options "")
+;;(parse-options "--default-selection")
