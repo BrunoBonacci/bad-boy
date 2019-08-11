@@ -13,7 +13,7 @@
                  [com.cognitect.aws/endpoints "1.1.11.537"]
                  [com.cognitect.aws/ec2       "714.2.430.0"]
                  [com.cognitect.aws/autoscaling "712.2.426.0"]
-                 [com.brunobonacci/where "0.5.1"]
+                 [com.brunobonacci/where "0.5.5"]
                  [instaparse "1.4.10"]]
 
   :global-vars {*warn-on-reflection* true}
