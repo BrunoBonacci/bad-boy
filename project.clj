@@ -23,7 +23,7 @@
   :bin {:name "bad-boy"
         :jvm-opts ["-server" "$JVM_OPTS" "-Dfile.encoding=utf-8"]}
 
-  :main com.brunobonacci.bad-boy
+  :main com.brunobonacci.bad-boy.main
 
   :profiles {:uberjar {:aot :all}
              :dev {:dependencies [[midje "1.9.8"]

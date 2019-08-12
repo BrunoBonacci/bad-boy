@@ -1,10 +1,10 @@
 (ns com.brunobonacci.bad-boy.command-line
   (:require [instaparse.core :as insta :refer [defparser]]
+            [where.core :refer [where]]
             [clojure.java.io :as io]))
 
 
 (defparser parser (io/resource "cli-grammar.ebnf"))
-
 
 
 (defn parse-options
@@ -40,3 +40,32 @@
 ;;(parse-options "")
 ;;(parse-options "--default-selection")
 ;;(parse-options "very unlucky* people")
+
+
+;; TOOD: fix assumption of only one key
+(defmulti build-filter (comp first keys))
+
+
+(defmethod build-filter :target-name
+  [{:keys [target-name]}]
+  [:AutoScalingGroupName :GLOB-MATCHES? target-name])
+
+
+;; TOOD: fix assumption of only one key
+(defmethod build-filter :tag
+  [{:keys [tag]}]
+  (let [[k v] (first tag)]
+    [(comp (keyword k) :Tags) :is? v]))
+
+
+(defmethod build-filter :preset
+  [{:keys [preset]}]
+  (case preset
+    :default-selection [(comp :chaos-testing :Tags) :is? "opt-in"]))
+
+
+(defn build-filters
+  [{:keys [targets]}]
+  (where
+   (cons :or
+         (map build-filter targets))))

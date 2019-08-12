@@ -1,10 +1,7 @@
-(ns com.brunobonacci.bad-boy
+(ns com.brunobonacci.bad-boy.core
   (:refer-clojure :exclude [rand-nth])
   (:require [cognitect.aws.client.api :as aws]
-            [where.core :refer [where]]
-            [clojure.string :as str]
-            [clojure.java.io :as io])
-  (:gen-class))
+            [where.core :refer [where]]))
 
 ;;(def creds (credentials/system-property-credentials-provider))
 ;;(reset! dry-run 1)
@@ -103,39 +100,3 @@
                    (or target "There is nothing to do here. :-(, lucky day!")))
     (when target
       (kill-instances ec2 [target]))))
-
-
-
-(defn header
-  [targets]
-  (println
-   (format
-    "
-============================================================
-
-                 ---==| B A D - B O Y |==---
-
-============================================================
-              (C) 2019 - Bruno Bonacci - v%s
-------------------------------------------------------------
-      Chaos testing and infrastructure hardening tool.
-
-   Time    : %s
-   Targets : %s
-============================================================
-" (some-> (io/resource "bad-boy.version") slurp str/trim)
-  (java.util.Date.)
-  (pr-str targets))))
-
-
-(defn -main
-  [& asg-names]
-  (header asg-names)
-  (if-not (seq asg-names)
-    (println "[no-op] No target selected, please provide a list of regex for autoscaling groups to target, or use --default-selection !")
-    (let [filters (if (= "--default-selection" (first asg-names))
-                    (where (comp :chaos-testing :Tags) :is? "opt-in")
-                    (where
-                     (cons :or
-                           (map (fn [g] [:AutoScalingGroupName :MATCHES? g]) asg-names))))]
-      (find-and-kill-one asg ec2 filters))))
