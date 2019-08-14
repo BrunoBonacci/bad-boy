@@ -1,6 +1,7 @@
 (ns com.brunobonacci.bad-boy.core
   (:refer-clojure :exclude [rand-nth])
   (:require [cognitect.aws.client.api :as aws]
+            [clojure.tools.logging :as log]
             [where.core :refer [where]]))
 
 ;;(def creds (credentials/system-property-credentials-provider))
@@ -78,8 +79,10 @@
 
 
 (defn kill-instances [ec2 instance-ids]
-  (println (if @dry-run "[DRY-RUN]" "[ACTION]") "KILLING:" instance-ids)
-  (prn (aws-request ec2 {:op :TerminateInstances :request {:InstanceIds instance-ids :DryRun @dry-run}})))
+  (log/info (if @dry-run "[DRY-RUN]" "[ACTION]") "KILLING:" instance-ids)
+  (let [result (aws-request ec2 {:op :TerminateInstances :request {:InstanceIds instance-ids :DryRun @dry-run}})]
+    (log/info  "KILLING:" instance-ids ", result:" (prn-str result))
+    result))
 
 
 (defn rand-nth [c]
@@ -93,10 +96,9 @@
         group  (rand-nth groups)
         ists   (:Instances group)
         target (if (= 0 (count ists)) nil (-> (rand-nth ists) :InstanceId))]
-    (println (format "[kill1] Found %d groups" (count groups)))
-    (println (format "[kill1] Selected group: %s"
-                   (:AutoScalingGroupName group)))
-    (println (format "[kill1] Selected target: %s"
-                   (or target "There is nothing to do here. :-(, lucky day!")))
+    (log/infof "[attack: kill1] Found %d groups" (count groups))
+    (log/infof "[attack: kill1] Selected group: %s" (:AutoScalingGroupName group))
+    (log/infof "[attack: kill1] Selected target: %s"
+               (or target "There is nothing to do here. :-(, lucky day!"))
     (when target
       (kill-instances ec2 [target]))))
