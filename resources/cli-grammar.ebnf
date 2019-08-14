@@ -1,4 +1,4 @@
-command          = atom? (<ws> atom)*
+command          = atom? (<ws> atom)* <ws>*
 <atom>           = global-options | target
 
 <global-options> = global-option ( <ws> global-option )*

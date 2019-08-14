@@ -39,7 +39,12 @@
 ;;(parse-options "unlucky* --dryrun")
 ;;(parse-options "")
 ;;(parse-options "--default-selection")
-;;(parse-options "very unlucky* people")
+;;(parse-options " very unlucky*   people ")
+
+
+(defn parse-error?
+  [parse-result]
+  (insta/failure? parse-result))
 
 
 ;; TOOD: fix assumption of only one key

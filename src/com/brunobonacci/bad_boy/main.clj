@@ -37,20 +37,30 @@
 
 
 
+(defn exit-with-error [n msg]
+  (binding [*out* *err*]
+    (println msg))
+  (System/exit n))
+
+
+
 (defn -main
   [& cli]
   (let [cmd (cli/parse-options (str/join " " cli))]
     (header cmd)
-    (prn cmd) ;; TODO: remove
+
     (cond
+      (cli/parse-error? cmd)
+      (exit-with-error 1 cmd)
+
       (:help cmd)
-      (println "TODO: help")
+      (exit-with-error 0 cmd)
 
       (:version cmd)
-      (printf "bad-boy - v%s\n\n" (version))
+      (exit-with-error 0 (format "bad-boy - v%s\n\n" (version)))
 
       (nil? (:targets cmd))
-      (println "[no-op] No target selected, please provide a list of regex for autoscaling groups to target, or use --default-selection !")
+      (exit-with-error 0 "[no-op] No target selected, please provide a list of regex for autoscaling groups to target, or use --default-selection !")
 
       :else
       (do
