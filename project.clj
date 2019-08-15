@@ -26,13 +26,22 @@
 
   :main com.brunobonacci.bad-boy.main
 
-  :profiles {:uberjar {:aot :all}
-             :dev {:dependencies [[midje "1.9.8"]
-                                  [org.clojure/test.check "0.10.0-alpha4"]
-                                  [criterium "0.4.5"]
-                                  [org.slf4j/slf4j-log4j12 "1.8.0-beta4"]]
-                   :resource-paths ["dev-resources"]
-                   :plugins      [[lein-midje "3.2.1"]
-                                  [lein-binplus "0.6.5"]]}}
+  :profiles {:uberjar
+             {:aot :all
+              ;; temp fix for logging
+              :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
+                             [org.codehaus.janino/janino "3.0.15"]
+                             [com.internetitem/logback-elasticsearch-appender "1.6"]]
+              :resource-paths ["dev-resources"]}
+
+             :dev
+             {:dependencies [[midje "1.9.8"]
+                             [org.clojure/test.check "0.10.0-alpha4"]
+                             [criterium "0.4.5"]
+                             [ch.qos.logback/logback-classic "1.2.3"]]
+              :resource-paths ["dev-resources"]
+
+              :plugins      [[lein-midje "3.2.1"]
+                             [lein-binplus "0.6.5"]]}}
 
   )
