@@ -1,0 +1,57 @@
+NAME
+    bad-boy - Chaos testing and infrastructure hardening tool.
+                 (C) 2019 - Bruno Bonacci - v%s
+
+SYNOPSIS
+
+    bad-boy [global-options] [TARGET...]
+
+DESCRIPTION
+
+    bad-boy is a Chaos testing tool. It generates artificial failures
+    and other perturbations is the infrastructure to test how
+    applications handle such scenarios.
+
+GLOBAL-OPTIONS
+
+    -h, --help
+        It displays this page.
+
+
+    -v, --version
+        It shows bad-boy's version.
+
+
+    --dryrun, --dry-run
+        It simulate the execution without performing the attack.
+
+TARGET
+
+    There are multiple ways to select the which part of your
+    infrastructure will be under attack.
+
+    By name: web-app* or booking-asg
+        It supports glob matching (? for any singe char, * for any
+        number of any char). If provided it will be matched against
+        the auto-scaling group names.
+
+    By tag:  tag:<tag-name>=<tag-value>
+        It matches the auto-scaling groups with have a tag which
+        matches the given tag-name and tag-value pair.
+        Examples:
+           tag:Foo=bar
+           tag:resilient=true
+           tag:KillMe='try it'
+
+    --default-selection
+        It matches the auto-scaling groups with have a tag with
+        the following name/value `chaos-testing=opt-in`.
+        Practically, it is the same as: `tag:chaos-testing=opt-in`
+
+ATTACKS
+
+    The only supported attack currently is the termination of one
+    instance in a auto-scaling group.
+
+
+For more info please visit: https://github.com/BrunoBonacci/bad-boy

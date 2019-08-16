@@ -4,7 +4,9 @@
             [clojure.java.io :as io]))
 
 
+
 (defparser parser (io/resource "cli-grammar.ebnf"))
+
 
 
 (defn parse-options
@@ -42,6 +44,7 @@
 ;;(parse-options " very unlucky*   people ")
 
 
+
 (defn parse-error?
   [parse-result]
   (insta/failure? parse-result))
@@ -49,6 +52,7 @@
 
 ;; TOOD: fix assumption of only one key
 (defmulti build-filter (comp first keys))
+
 
 
 (defmethod build-filter :target-name
@@ -63,10 +67,12 @@
     [(comp (keyword k) :Tags) :is? v]))
 
 
+
 (defmethod build-filter :preset
   [{:keys [preset]}]
   (case preset
     :default-selection [(comp :chaos-testing :Tags) :is? "opt-in"]))
+
 
 
 (defn build-filters

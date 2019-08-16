@@ -8,9 +8,11 @@
 ;;(reset! dry-run 1)
 
 
+
 (def ec2 (aws/client {:api :ec2}))
 (def asg (aws/client {:api :autoscaling}))
 (def dry-run (atom (System/getenv "DRY_RUN")))
+
 
 
 (defn aws-request
@@ -85,9 +87,11 @@
     result))
 
 
+
 (defn rand-nth [c]
   (when (> (count c) 0)
     (clojure.core/rand-nth c)))
+
 
 
 (defn find-and-kill-one

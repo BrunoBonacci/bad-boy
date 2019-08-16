@@ -12,6 +12,13 @@
   (some-> (io/resource "bad-boy.version") slurp str/trim))
 
 
+
+(defn help-page
+  []
+  (some-> (io/resource "help.txt") slurp (format (version))))
+
+
+
 (defn header
   [cmd]
   (println
@@ -47,22 +54,24 @@
 (defn -main
   [& cli]
   (let [cmd (cli/parse-options (str/join " " cli))]
-    (header cmd)
 
     (cond
       (cli/parse-error? cmd)
       (exit-with-error 1 cmd)
 
       (:help cmd)
-      (exit-with-error 0 cmd)
+      (exit-with-error 0 (help-page))
 
       (:version cmd)
       (exit-with-error 0 (format "bad-boy - v%s\n\n" (version)))
 
       (nil? (:targets cmd))
-      (exit-with-error 0 "[no-op] No target selected, please provide a list of regex for autoscaling groups to target, or use --default-selection !")
+      (do
+        (header cmd)
+        (exit-with-error 0 "[no-op] No target selected, please provide a list of regex for autoscaling groups to target, or use --default-selection !"))
 
       :else
       (do
+        (header cmd)
         (reset! core/dry-run (boolean (:dry-run cmd)))
         (core/find-and-kill-one core/asg core/ec2 (cli/build-filters cmd))))))
