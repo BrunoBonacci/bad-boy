@@ -68,7 +68,7 @@
       (nil? (:targets cmd))
       (do
         (header cmd)
-        (exit-with-error 0 "[no-op] No target selected, please provide a list of regex for autoscaling groups to target, or use --default-selection !"))
+        (exit-with-error 0 "[no-op] No target selected, please provide a list of names for autoscaling groups to target, or use --default-selection !"))
 
       :else
       (do
