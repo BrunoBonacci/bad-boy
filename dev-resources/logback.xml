@@ -21,6 +21,24 @@
             <value>application/json</value>
           </header>
         </headers>
+        <properties>
+          <property>
+            <name>log.class</name>
+            <value>%logger</value>
+          </property>
+          <property>
+            <name>log.level</name>
+            <value>%level</value>
+          </property>
+          <property>
+            <name>host.name</name>
+            <value>${HOSTNAME}</value>
+          </property>
+          <property>
+            <name>exception</name>
+            <value>%xThrowable{full}</value>
+          </property>
+        </properties>
       </appender>
     </then>
   </if>
