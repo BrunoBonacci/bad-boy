@@ -25,6 +25,19 @@ GLOBAL-OPTIONS
     --dryrun, --dry-run
         It simulate the execution without performing the attack.
 
+
+    --killer-run [<group>], (default: all)
+        It runs continuously and attacks based on a configuration
+        group. The optional parameter is the name of the configuration
+        in which you can define the attack rate in terms of the
+        percentage of the targets that will be attacked in a given
+        period. The default group is `all` and the attack rate is set
+        as `[0.30 :daily]` which means that 30%% of the targets will be
+        attacked on daily basis.
+        It can be used in conjunction with the targets selection, and
+        the default selection is same as preset `--default-selection`
+
+
 TARGET
 
     There are multiple ways to select the which part of your

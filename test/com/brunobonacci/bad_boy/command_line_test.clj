@@ -64,3 +64,15 @@
      {:tag {"application" "web-server"}}]}
 
  )
+
+
+(facts
+ "killer-run"
+
+ (parse-options "--killer-run all") => {:killer-run :all}
+ (parse-options "--killer-run :all") => {:killer-run :all}
+ (parse-options "--killer-run ::all") => {:killer-run :all}
+ (parse-options "--killer-run something-else") => {:killer-run :something-else}
+ (parse-options "--killer-run") => {:killer-run :all}
+
+ )

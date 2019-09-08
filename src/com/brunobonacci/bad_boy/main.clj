@@ -36,11 +36,16 @@
    Time    : %s
    Dry-run : %b
    Targets : %s
+Killer-run : %s group, rate: %s
 ============================================================
 " (version)
     (java.util.Date.)
-    (boolean (:dry-run cmd))
-    (pr-str (:targets cmd)))))
+    (boolean (or (:dry-run cmd) (System/getenv "DRY_RUN")))
+    (pr-str (:targets cmd))
+    (pr-str (:killer-run cmd))
+    (if (:killer-run cmd)
+      (get-in core/DEFAULT-CONFIG [:groups (:killer-run cmd) :attack-rate] "???")
+      "none"))))
 
 
 
@@ -65,10 +70,25 @@
       (:version cmd)
       (exit-with-error 0 (format "bad-boy - v%s\n\n" (version)))
 
-      (nil? (:targets cmd))
+      (and (nil? (:targets cmd)) (nil? (:killer-run cmd)))
       (do
         (header cmd)
         (exit-with-error 0 "[no-op] No target selected, please provide a list of names for autoscaling groups to target, or use --default-selection !"))
+
+      (and (:killer-run cmd) (not (get-in core/DEFAULT-CONFIG [:groups (:killer-run cmd)])))
+      (do
+        (header cmd)
+        (exit-with-error 1 (format "Group %s not found." (name (:killer-run cmd)))))
+
+
+      (:killer-run cmd)
+      (let [cfg (if (:targets cmd)
+                  (assoc-in core/DEFAULT-CONFIG
+                            [:groups (:killer-run cmd) :targets]
+                            (cli/build-filters cmd))
+                  core/DEFAULT-CONFIG)]
+        (header cmd)
+        (core/killer-run cfg (:killer-run cmd)))
 
       :else
       (do

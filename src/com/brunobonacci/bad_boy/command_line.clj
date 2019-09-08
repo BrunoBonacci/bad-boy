@@ -1,7 +1,8 @@
 (ns com.brunobonacci.bad-boy.command-line
   (:require [instaparse.core :as insta :refer [defparser]]
             [where.core :refer [where]]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.string :as str]))
 
 
 
@@ -21,7 +22,9 @@
        :target-name  #(array-map :target-name %)
        :tag (fn [[_ k] [_ v]] {:tag {k v}})
 
-       :preset  (fn [[p]] {:preset p})
+       :preset     (fn [[p]] {:preset p})
+       :killer-run (fn [& [[_ g]]] [:killer-run (keyword (str/replace (or g "all") #"^:+" ""))])
+
        :command (fn [& args]
                   (loop [cmd {} [arg & args] args]
                     (cond
@@ -42,6 +45,8 @@
 ;;(parse-options "")
 ;;(parse-options "--default-selection")
 ;;(parse-options " very unlucky*   people ")
+;;(parse-options "--killer-run group1" )
+;;(parse-options "--killer-run group target" )
 
 
 

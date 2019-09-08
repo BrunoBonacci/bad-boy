@@ -1,11 +1,13 @@
 command          = atom? (<ws> atom)* <ws>*
-<atom>           = global-options | target
+<atom>           = global-options / target
 
 <global-options> = global-option ( <ws> global-option )*
-<global-option>  = help | version | dry-run
+<global-option>  = help | version | dry-run | killer-run
 help             = <'-h'> | <'--help'>
 version          = <'-v'> | <'--version'>
 dry-run          = <'--dryrun'> | <'--dry-run'>
+killer-run       = <'--killer-run'> [ <ws> group-name ]
+group-name       = #'[a-zA-Z0-9_:-]+'
 
 target           = target-name / tag / preset
 target-name      = glob
