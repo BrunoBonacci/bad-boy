@@ -33,7 +33,8 @@
               ;; temp fix for logging
               :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
                              [org.codehaus.janino/janino "3.0.15"]
-                             [com.internetitem/logback-elasticsearch-appender "1.6"]]
+                             [com.internetitem/logback-elasticsearch-appender "1.6"]
+                             [samsara/trackit-prometheus "0.9.2"]]
               :resource-paths ["dev-resources"]}
 
              :dev

@@ -4,7 +4,7 @@
             [clojure.tools.logging :as log]
             [where.core :refer [where]]
             [safely.core :refer [safely sleeper]]
-            [samsara.trackit :refer [track-distribution track-count]]))
+            [samsara.trackit :refer [track-distribution track-count track-value]]))
 
 
 
@@ -150,8 +150,8 @@
                      (map (juxt #(select-keys % [:AutoScalingGroupName :MinSize :MaxSize :DesiredCapacity]) :Instances))
                      (mapcat (fn [[asg insts]] (map (partial merge asg) insts))))
         dead      (rand-selector instances)]
-    (track-count        "bad-boy.selection.groups-pool"    (count groups))
-    (track-count        "bad-boy.selection.instances-pool" (count instances))
+    (track-value "bad-boy.selection.groups-pool"    (count groups))
+    (track-value "bad-boy.selection.instances-pool" (count instances))
 
     (when (seq dead)
       (track-distribution "bad-boy.random-kill.kill-size" (count dead))

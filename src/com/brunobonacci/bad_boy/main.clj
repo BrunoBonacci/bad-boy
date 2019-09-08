@@ -2,7 +2,9 @@
   (:require [com.brunobonacci.bad-boy.command-line :as cli]
             [com.brunobonacci.bad-boy.core :as core]
             [clojure.string :as str]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [samsara.trackit :as trackit]
+            [clojure.tools.logging :as log])
   (:gen-class))
 
 
@@ -16,6 +18,19 @@
 (defn help-page
   []
   (some-> (io/resource "help.txt") slurp (format (version))))
+
+
+
+(defn metrics-reporting!
+  []
+  (when (= "1" (System/getenv "BADBOY_METRICS_ENABLED"))
+    (log/info "Starting metrics reporting to: "
+              (or (System/getenv "BADBOY_METRICS_REPORTER") "console"))
+    (trackit/start-reporting!
+     {:type        (keyword (or (System/getenv "BADBOY_METRICS_REPORTER") "console"))
+      :jvm-metrics :none
+      :reporting-frequency-seconds 10
+      :push-gateway-url  (or (System/getenv "BADBOY_METRICS_DEST") "http://localhost:9091")})))
 
 
 
@@ -88,10 +103,12 @@ Killer-run : %s group, rate: %s
                             (cli/build-filters cmd))
                   core/DEFAULT-CONFIG)]
         (header cmd)
+        (metrics-reporting!)
         (core/killer-run cfg (:killer-run cmd)))
 
       :else
       (do
         (header cmd)
+        (metrics-reporting!)
         (reset! core/dry-run (boolean (:dry-run cmd)))
         (core/find-and-kill-one core/asg core/ec2 (cli/build-filters cmd))))))
