@@ -29,6 +29,7 @@
     (trackit/start-reporting!
      {:type        (keyword (or (System/getenv "BADBOY_METRICS_REPORTER") "console"))
       :jvm-metrics :none
+      :reporter-name "bad-boy"
       :reporting-frequency-seconds 10
       :push-gateway-url  (or (System/getenv "BADBOY_METRICS_DEST") "http://localhost:9091")})))
 
