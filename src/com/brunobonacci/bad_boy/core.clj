@@ -179,8 +179,7 @@
         num-cycles  (/ (period attack-period) run-cycle)
         attack-prob (/ attack-rate num-cycles )]
     (fn [coll]
-      (let [attack-prob (/ attack-prob (inc (count coll)))]
-        (filter #(when (<= (rand) attack-prob) %) coll)))))
+      (filter #(when (<= (rand) attack-prob) %) coll))))
 
 
 
