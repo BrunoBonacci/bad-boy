@@ -12,7 +12,7 @@
     <then>
       <appender name="ELASTIC" class="com.internetitem.logback.elasticsearch.ElasticsearchAppender">
         <url>${ELS_LOGGER_URL}/_bulk</url>
-        <index>bad-boy-%date{yyyy.MM.dd}</index>
+        <index>bad-boy-%date{yyyy.MM}</index>
         <type>log</type>
         <errorsToStderr>true</errorsToStderr>
         <headers>
