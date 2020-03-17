@@ -4,7 +4,7 @@
             [clojure.tools.logging :as log]
             [where.core :refer [where]]
             [safely.core :refer [safely sleeper]]
-            [samsara.trackit :refer [track-distribution track-count track-value]]))
+            [com.brunobonacci.mulog :as u]))
 
 
 
@@ -23,13 +23,7 @@
 
 
 (def ec2 (aws/client {:api :ec2}))
-
-
-
 (def asg (aws/client {:api :autoscaling}))
-
-
-
 (def dry-run (atom (System/getenv "DRY_RUN")))
 
 
@@ -114,10 +108,14 @@
 
 
 (defn kill-instances [ec2 instance-ids]
-  (log/info (if @dry-run "[DRY-RUN]" "[ACTION]") "KILLING:" instance-ids)
-  (when-not @dry-run
+  (if @dry-run
+    (do
+      (log/info (if @dry-run "[DRY-RUN]" "[ACTION]") "KILLING:" instance-ids)
+      (u/log ::simulated-attack, :dry-run true, :attack-type :kill-instances, :instances instance-ids))
+    ;; real attack
     (let [result (aws-request ec2 {:op :TerminateInstances :request {:InstanceIds instance-ids}})]
       (log/info  "KILLING:" instance-ids ", result:" (prn-str result))
+      (u/log ::attack, :attack-type :kill-instances, :instances instance-ids)
       result)))
 
 
@@ -138,8 +136,14 @@
     (log/infof "[attack: kill1] Selected group: %s" (:AutoScalingGroupName group))
     (log/infof "[attack: kill1] Selected target: %s"
                (or target "There is nothing to do here. :-(, lucky day!"))
-    (when target
-      (kill-instances ec2 [target]))))
+    (u/with-context
+      {:total-groups    (count groups)
+       :group-instances (count ists)
+       :num-kills       (if target 1 0)
+       :group           (:AutoScalingGroupName group)
+       :attack-name     :kill1}
+      (when target
+        (kill-instances ec2 [target])))))
 
 
 
@@ -150,23 +154,26 @@
                      (map (juxt #(select-keys % [:AutoScalingGroupName :MinSize :MaxSize :DesiredCapacity]) :Instances))
                      (mapcat (fn [[asg insts]] (map (partial merge asg) insts))))
         dead      (rand-selector instances)]
-    (track-value "bad-boy.selection.groups-pool"    (count groups))
-    (track-value "bad-boy.selection.instances-pool" (count instances))
 
     (when (seq dead)
-      (track-distribution "bad-boy.random-kill.kill-size" (count dead))
-      (track-count        "bad-boy.random-kill.kills"     (count dead))
       (log/infof "[attack: random-kill] Found %d groups and %d instances, killing: %d"
                  (count groups) (count instances) (count dead)))
 
     (doseq [instance dead]
       (log/infof "[attack: random-kill] Selected target: %s / %s"
                  (:AutoScalingGroupName instance) (:InstanceId instance))
-      (safely
-       (kill-instances ec2 [(:InstanceId instance)])
-       :on-error
-       :max-retries 3
-       :default nil))))
+
+      (u/with-context
+        {:total-groups    (count groups)
+         :total-instances (count instances)
+         :num-kills       (count dead)
+         :group           (:AutoScalingGroupName instance)
+         :attack-name     :random-kill}
+        (safely
+         (kill-instances ec2 [(:InstanceId instance)])
+         :on-error
+         :max-retries 3
+         :default nil)))))
 
 
 
@@ -190,7 +197,6 @@
         sleep*   (sleeper :fix run-cycle)]
     (println "Killer on the run, press CTRL-c to stop it!")
     (loop []
-      (track-count "bad-boy.killer-run.runs")
       (random-kill asg ec2 selector filters)
       (sleep*)
       (recur))))

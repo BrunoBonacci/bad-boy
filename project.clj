@@ -9,15 +9,15 @@
   :scm {:name "git" :url "https://github.com/BrunoBonacci/bad-boy.git"}
 
   :dependencies [[org.clojure/clojure           "1.10.1"]
-                 [org.clojure/tools.logging     "0.5.0"]
-                 [com.cognitect.aws/api         "0.8.352"]
-                 [com.cognitect.aws/endpoints   "1.1.11.537"]
-                 [com.cognitect.aws/ec2         "714.2.430.0"]
-                 [com.cognitect.aws/autoscaling "712.2.426.0"]
+                 [org.clojure/tools.logging     "1.0.0"]
+                 [com.cognitect.aws/api         "0.8.445"]
+                 [com.cognitect.aws/endpoints   "1.1.11.732"]
+                 [com.cognitect.aws/ec2         "793.2.627.0"]
+                 [com.cognitect.aws/autoscaling "792.2.622.0"]
                  [instaparse                    "1.4.10"]
                  [com.brunobonacci/where        "0.5.5"]
-                 [samsara/trackit-core          "0.9.2"]
-                 [com.brunobonacci/safely       "0.5.0-alpha7"]]
+                 [com.brunobonacci/safely       "0.5.0"]
+                 [com.brunobonacci/mulog        "0.1.8"]]
 
   :global-vars {*warn-on-reflection* true}
 
@@ -32,14 +32,14 @@
              {:aot :all
               ;; temp fix for logging
               :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
-                             [org.codehaus.janino/janino "3.0.15"]
+                             [org.codehaus.janino/janino "3.1.1"]
                              [com.internetitem/logback-elasticsearch-appender "1.6"]
-                             [samsara/trackit-prometheus "0.9.2"]]
+                             [com.brunobonacci/mulog-elasticsearch "0.1.8"]]
               :resource-paths ["dev-resources"]}
 
              :dev
-             {:dependencies [[midje "1.9.8"]
-                             [org.clojure/test.check "0.10.0-alpha4"]
+             {:dependencies [[midje "1.9.9"]
+                             [org.clojure/test.check "1.0.0"]
                              [criterium "0.4.5"]
                              [ch.qos.logback/logback-classic "1.2.3"]]
               :resource-paths ["dev-resources"]
