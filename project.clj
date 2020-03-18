@@ -33,8 +33,9 @@
               ;; temp fix for logging
               :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
                              [org.codehaus.janino/janino "3.1.1"]
-                             [com.internetitem/logback-elasticsearch-appender "1.6"]
-                             [com.brunobonacci/mulog-elasticsearch "0.1.8"]]
+                             [com.brunobonacci/mulog-elasticsearch "0.1.8"]
+                             [com.internetitem/logback-elasticsearch-appender "1.6"
+                              :exclusions [com.fasterxml.jackson.core/jackson-core]]]
               :resource-paths ["dev-resources"]}
 
              :dev
