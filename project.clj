@@ -17,7 +17,7 @@
                  [instaparse                    "1.4.10"]
                  [com.brunobonacci/where        "0.5.5"]
                  [com.brunobonacci/safely       "0.5.0"]
-                 [com.brunobonacci/mulog        "0.1.8"]]
+                 [com.brunobonacci/mulog        "0.2.0"]]
 
   :global-vars {*warn-on-reflection* true}
 
@@ -33,7 +33,7 @@
               ;; temp fix for logging
               :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
                              [org.codehaus.janino/janino "3.1.1"]
-                             [com.brunobonacci/mulog-elasticsearch "0.1.8"]
+                             [com.brunobonacci/mulog-elasticsearch "0.2.0"]
                              [com.internetitem/logback-elasticsearch-appender "1.6"
                               :exclusions [com.fasterxml.jackson.core/jackson-core]]
                              [clj-time "0.15.2"]]
