@@ -35,18 +35,17 @@
   "start the events publisher, returns a function to stop the publishers"
   []
   (u/set-global-context!
-   {:app-name "bad-boy" :env (env)
-    :version (version) :puid (ut/puid)})
+    {:app-name "bad-boy" :env (env)
+     :version (version) :puid (ut/puid)})
 
 
   (let [stop*
-        (when (= "1" (System/getenv "BADBOY_METRICS_ENABLED"))
-          (let [publisher-type (keyword (or (System/getenv "BADBOY_METRICS_REPORTER") "console"))
-                destination (or (System/getenv "BADBOY_METRICS_DEST") "http://localhost:9200/")]
-            (log/info "Starting metrics reporting to: " publisher-type "-" destination)
-            (if (= :elasticsearch publisher-type)
-              (u/start-publisher! {:type :elasticsearch :url destination})
-              (u/start-publisher! {:type :console}))))]
+        (let [publisher-conf
+              (read-string
+                (or (System/getenv "BADBOY_PUBLISHER_CONF")
+                  (pr-str {:type :console :pretty? true})))]
+          (log/info "Starting metrics reporting to: " publisher-conf)
+          (u/start-publisher! publisher-conf))]
 
     (fn []
       (when stop*
@@ -60,8 +59,8 @@
 (defn header
   [cmd]
   (println
-   (format
-    "
+    (format
+      "
 ============================================================
 
                  ---==| B A D - B O Y |==---
@@ -77,13 +76,13 @@
 Killer-run : %s group, rate: %s
 ============================================================
 " (version)
-    (java.util.Date.)
-    (boolean (or (:dry-run cmd) (System/getenv "DRY_RUN")))
-    (pr-str (:targets cmd))
-    (pr-str (:killer-run cmd))
-    (if (:killer-run cmd)
-      (get-in core/DEFAULT-CONFIG [:groups (:killer-run cmd) :attack-rate] "???")
-      "none"))))
+      (java.util.Date.)
+      (boolean (or (:dry-run cmd) (System/getenv "DRY_RUN")))
+      (pr-str (:targets cmd))
+      (pr-str (:killer-run cmd))
+      (if (:killer-run cmd)
+        (get-in core/DEFAULT-CONFIG [:groups (:killer-run cmd) :attack-rate] "???")
+        "none"))))
 
 
 
@@ -122,8 +121,8 @@ Killer-run : %s group, rate: %s
       (:killer-run cmd)
       (let [cfg  (if (:targets cmd)
                    (assoc-in core/DEFAULT-CONFIG
-                             [:groups (:killer-run cmd) :targets]
-                             (cli/build-filters cmd))
+                     [:groups (:killer-run cmd) :targets]
+                     (cli/build-filters cmd))
                    core/DEFAULT-CONFIG)
             _    (header cmd)
             stop (start-events-publisher!)]

@@ -8,16 +8,18 @@
 
   :scm {:name "git" :url "https://github.com/BrunoBonacci/bad-boy.git"}
 
-  :dependencies [[org.clojure/clojure           "1.10.1"]
-                 [org.clojure/tools.logging     "1.0.0"]
-                 [com.cognitect.aws/api         "0.8.445"]
-                 [com.cognitect.aws/endpoints   "1.1.11.732"]
-                 [com.cognitect.aws/ec2         "793.2.627.0"]
-                 [com.cognitect.aws/autoscaling "792.2.622.0"]
-                 [instaparse                    "1.4.10"]
-                 [com.brunobonacci/where        "0.5.5"]
-                 [com.brunobonacci/safely       "0.5.0"]
-                 [com.brunobonacci/mulog        "0.2.0"]]
+  :dependencies [[org.clojure/clojure                  "1.10.1"]
+                 [org.clojure/tools.logging            "1.1.0"]
+                 [com.cognitect.aws/api                "0.8.484"]
+                 [com.cognitect.aws/endpoints          "1.1.11.914"]
+                 [com.cognitect.aws/ec2                "810.2.805.0"]
+                 [com.cognitect.aws/autoscaling        "810.2.801.0"]
+                 [instaparse                           "1.4.10"]
+                 [com.brunobonacci/where               "0.5.5"]
+                 [com.brunobonacci/safely              "0.7.0-alpha1"]
+                 [com.brunobonacci/mulog               "0.5.0"]
+                 [com.brunobonacci/mulog-elasticsearch "0.5.0"]
+                 [com.brunobonacci/mulog-cloudwatch    "0.5.0"]]
 
   :global-vars {*warn-on-reflection* true}
 
@@ -32,8 +34,7 @@
              {:aot :all
               ;; temp fix for logging
               :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
-                             [org.codehaus.janino/janino "3.1.1"]
-                             [com.brunobonacci/mulog-elasticsearch "0.2.0"]
+                             [org.codehaus.janino/janino "3.1.2"]
                              [com.internetitem/logback-elasticsearch-appender "1.6"
                               :exclusions [com.fasterxml.jackson.core/jackson-core]]
                              [clj-time "0.15.2"]]
@@ -41,8 +42,8 @@
 
              :dev
              {:dependencies [[midje "1.9.9"]
-                             [org.clojure/test.check "1.0.0"]
-                             [criterium "0.4.5"]
+                             [org.clojure/test.check "1.1.0"]
+                             [criterium "0.4.6"]
                              [ch.qos.logback/logback-classic "1.2.3"]]
               :resource-paths ["dev-resources"]
 
