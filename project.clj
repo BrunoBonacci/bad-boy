@@ -17,9 +17,10 @@
                  [instaparse                           "1.4.10"]
                  [com.brunobonacci/where               "0.5.5"]
                  [com.brunobonacci/safely              "0.7.0-alpha1"]
-                 [com.brunobonacci/mulog               "0.5.0"]
-                 [com.brunobonacci/mulog-elasticsearch "0.5.0"]
-                 [com.brunobonacci/mulog-cloudwatch    "0.5.0"]]
+                 [com.brunobonacci/mulog               "0.6.2"]
+                 [com.brunobonacci/mulog-elasticsearch "0.6.2"]
+                 [com.brunobonacci/mulog-cloudwatch    "0.6.2"]
+                 [com.brunobonacci/oneconfig           "0.20.0"]]
 
   :global-vars {*warn-on-reflection* true}
 

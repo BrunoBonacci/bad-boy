@@ -6,7 +6,9 @@
             [clojure.tools.logging :as log]
             [safely.core :refer [sleep]]
             [com.brunobonacci.mulog :as u]
-            [com.brunobonacci.mulog.utils :as ut])
+            [com.brunobonacci.mulog.utils :as ut]
+            [where.core :refer [where]]
+            [com.brunobonacci.oneconfig :refer [deep-merge configure]])
   (:gen-class))
 
 
@@ -33,17 +35,14 @@
 
 (defn start-events-publisher!
   "start the events publisher, returns a function to stop the publishers"
-  []
+  [{:keys [mulog app-name]}]
   (u/set-global-context!
-    {:app-name "bad-boy" :env (env)
+    {:app-name app-name :env (env)
      :version (version) :puid (ut/puid)})
 
 
   (let [stop*
-        (let [publisher-conf
-              (read-string
-                (or (System/getenv "BADBOY_PUBLISHER_CONF")
-                  (pr-str {:type :console :pretty? true})))]
+        (let [publisher-conf (or  mulog {:type :console :pretty? true})]
           (log/info "Starting metrics reporting to: " publisher-conf)
           (u/start-publisher! publisher-conf))]
 
@@ -57,7 +56,7 @@
 
 
 (defn header
-  [cmd]
+  [cfg cmd]
   (println
     (format
       "
@@ -66,7 +65,7 @@
                  ---==| B A D - B O Y |==---
 
 ============================================================
-            (C) 2019-2020 - Bruno Bonacci - v%s
+            (C) 2019-2021 - Bruno Bonacci - v%s
 ------------------------------------------------------------
       Chaos testing and infrastructure hardening tool.
 ------------------------------------------------------------
@@ -81,7 +80,7 @@ Killer-run : %s group, rate: %s
       (pr-str (:targets cmd))
       (pr-str (:killer-run cmd))
       (if (:killer-run cmd)
-        (get-in core/DEFAULT-CONFIG [:groups (:killer-run cmd) :attack-rate] "???")
+        (get-in cfg [:groups (:killer-run cmd) :attack-rate] "???")
         "none"))))
 
 
@@ -93,49 +92,58 @@ Killer-run : %s group, rate: %s
 
 
 
+(defn make-targets
+  [{:keys [targets] :as m}]
+  (if targets
+    (assoc m :targets
+      (where
+        (cons :or
+          (map cli/build-filter targets))))
+    m))
+
+
+
+(defn load-config
+  [app-name]
+  (let [config-entry (configure {:key app-name :env (env) :version (version)})
+        cfg (deep-merge core/DEFAULT-CONFIG (:value config-entry) {:app-name app-name})]
+    ;; build executable filters
+    (-> cfg
+      (update :default-selection make-targets)
+      (update :groups
+        (fn [m]
+          (->> m
+            (map (fn [[k v]]
+                   [k (make-targets v)]))
+            (into {})))))))
+
+
+
 (defn -main
   [& cli]
-  (let [cmd (cli/parse-options (str/join " " cli))]
+  (let [cmd (cli/parse-options (str/join " " cli))
+        cfg (load-config (:oneconfig cmd "bad-boy"))]
 
     (cond
       (cli/parse-error? cmd)
       (exit-with-error 1 cmd)
 
-      (:help cmd)
+      (or (:help cmd) (nil? (:killer-run cmd)))
       (exit-with-error 0 (help-page))
 
       (:version cmd)
       (exit-with-error 0 (format "bad-boy - v%s\n\n" (version)))
 
-      (and (nil? (:targets cmd)) (nil? (:killer-run cmd)))
-      (do
-        (header cmd)
-        (exit-with-error 0 "[no-op] No target selected, please provide a list of names for autoscaling groups to target, or use --default-selection !"))
-
       (and (:killer-run cmd) (not (get-in core/DEFAULT-CONFIG [:groups (:killer-run cmd)])))
       (do
-        (header cmd)
+        (header cfg cmd)
         (exit-with-error 1 (format "Group %s not found." (name (:killer-run cmd)))))
 
 
       (:killer-run cmd)
-      (let [cfg  (if (:targets cmd)
-                   (assoc-in core/DEFAULT-CONFIG
-                     [:groups (:killer-run cmd) :targets]
-                     (cli/build-filters cmd))
-                   core/DEFAULT-CONFIG)
-            _    (header cmd)
-            stop (start-events-publisher!)]
+      (let [_    (header cfg cmd)
+            stop (start-events-publisher! cfg)]
         (u/log ::app-started :run-mode :killer-run)
         (core/killer-run cfg (:killer-run cmd))
-        (stop)
-        (shutdown-agents))
-
-      :else
-      (let [_    (header cmd)
-            stop (start-events-publisher!)]
-        (u/log ::app-started :run-mode :find-and-kill)
-        (reset! core/dry-run (boolean (:dry-run cmd)))
-        (core/find-and-kill-one core/asg core/ec2 (cli/build-filters cmd))
         (stop)
         (shutdown-agents)))))

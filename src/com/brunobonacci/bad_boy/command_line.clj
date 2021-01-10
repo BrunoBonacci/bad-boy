@@ -13,8 +13,8 @@
 (defn parse-options
   [cli]
   (->> cli
-     (parser)
-     (insta/transform
+    (parser)
+    (insta/transform
       {:help    #(vector :help    true)
        :version #(vector :version true)
        :dry-run #(vector :dry-run  true)
@@ -24,6 +24,7 @@
 
        :preset     (fn [[p]] {:preset p})
        :killer-run (fn [& [[_ g]]] [:killer-run (keyword (str/replace (or g "all") #"^:+" ""))])
+       :oneconfig  (fn [& [[_ g]]] [:oneconfig (or g "bad-boy")])
 
        :command (fn [& args]
                   (loop [cmd {} [arg & args] args]
@@ -83,5 +84,5 @@
 (defn build-filters
   [{:keys [targets]}]
   (where
-   (cons :or
-         (map build-filter targets))))
+    (cons :or
+      (map build-filter targets))))

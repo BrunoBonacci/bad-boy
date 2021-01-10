@@ -15,10 +15,14 @@
 
 (def DEFAULT-CONFIG
   {:run-cycle 60000 ;; 1 min
+
    :groups
    {:all
-    {:targets (where [(comp :chaos-testing :Tags) :is? "opt-in"])
-     :attack-rate [0.30 :daily]}}})
+    {:targets [{:tag {"chaos-testing" "opt-in"}}]
+     :attack-rate [0.30 :daily]}}
+
+   :default-selection {:targets [{:tag {"chaos-testing" "opt-in"}}]}
+   })
 
 
 
@@ -51,7 +55,7 @@
   (let [response (aws/invoke client request)]
     (when (-> response :Response :Errors :Error)
       (throw (ex-info (-> response :Response :Errors :Error :Message)
-                      (-> response :Response :Errors))))
+               (-> response :Response :Errors))))
     response))
 
 
@@ -59,9 +63,9 @@
 (defn tags-map
   [tags & {:keys [key-prefix] :or {key-prefix nil}}]
   (->> tags
-     (map (juxt :Key :Value))
-     (map (fn [[k v]] [(keyword (str key-prefix k)) v]))
-     (into {})))
+    (map (juxt :Key :Value))
+    (map (fn [[k v]] [(keyword (str key-prefix k)) v]))
+    (into {})))
 
 
 
@@ -71,10 +75,10 @@
    lazily concatenate all the results."
   [f coll]
   (lazy-seq
-   (if (not-empty coll)
-     (concat
-      (f (first coll))
-      (lazy-mapcat f (rest coll))))))
+    (if (not-empty coll)
+      (concat
+        (f (first coll))
+        (lazy-mapcat f (rest coll))))))
 
 
 
@@ -86,13 +90,13 @@
      (lazy-mapcat result-fn (lazy-query nil query)))
     ([page-token query]
      (let [result (query-fn
-                   (cond-> query
-                     page-token (assoc token-name page-token)))]
+                    (cond-> query
+                      page-token (assoc token-name page-token)))]
        (lazy-seq
-        (if-let [next-page (get result token-name)]
-          (cons result
-                (lazy-query next-page query))
-          [result]))))))
+         (if-let [next-page (get result token-name)]
+           (cons result
+             (lazy-query next-page query))
+           [result]))))))
 
 
 
@@ -101,9 +105,9 @@
   (let [desc-asg #(aws-request asg {:op :DescribeAutoScalingGroups :request %})
         lazy-desc-asg (lazy-paginated-query desc-asg :NextToken :AutoScalingGroups)]
     (->> (lazy-desc-asg {:MaxRecords 100})
-       (map #(select-keys % [:AutoScalingGroupName :MinSize :MaxSize :DesiredCapacity :Instances :Tags]))
-       (map #(update % :Tags tags-map))
-       (filter filters))))
+      (map #(select-keys % [:AutoScalingGroupName :MinSize :MaxSize :DesiredCapacity :Instances :Tags]))
+      (map #(update % :Tags tags-map))
+      (filter filters))))
 
 
 
@@ -135,7 +139,7 @@
     (log/infof "[attack: kill1] Found %d groups" (count groups))
     (log/infof "[attack: kill1] Selected group: %s" (:AutoScalingGroupName group))
     (log/infof "[attack: kill1] Selected target: %s"
-               (or target "There is nothing to do here. :-(, lucky day!"))
+      (or target "There is nothing to do here. :-(, lucky day!"))
     (u/with-context
       {:total-groups    (count groups)
        :group-instances (count ists)
@@ -151,17 +155,17 @@
   [asg ec2 rand-selector filters]
   (let [groups    (auto-scaling-groups asg filters)
         instances (->> groups
-                     (map (juxt #(select-keys % [:AutoScalingGroupName :MinSize :MaxSize :DesiredCapacity]) :Instances))
-                     (mapcat (fn [[asg insts]] (map (partial merge asg) insts))))
+                    (map (juxt #(select-keys % [:AutoScalingGroupName :MinSize :MaxSize :DesiredCapacity]) :Instances))
+                    (mapcat (fn [[asg insts]] (map (partial merge asg) insts))))
         dead      (rand-selector instances)]
 
     (when (seq dead)
-      (log/infof "[attack: random-kill] Found %d groups and %d instances, killing: %d"
-                 (count groups) (count instances) (count dead)))
+      (log/debugf "[attack: random-kill] Found %d groups and %d instances, killing: %d"
+        (count groups) (count instances) (count dead)))
 
     (doseq [instance dead]
       (log/infof "[attack: random-kill] Selected target: %s / %s"
-                 (:AutoScalingGroupName instance) (:InstanceId instance))
+        (:AutoScalingGroupName instance) (:InstanceId instance))
 
       (u/with-context
         {:total-groups    (count groups)
@@ -170,10 +174,10 @@
          :group           (:AutoScalingGroupName instance)
          :attack-name     :random-kill}
         (safely
-         (kill-instances ec2 [(:InstanceId instance)])
-         :on-error
-         :max-retries 3
-         :default nil)))))
+          (kill-instances ec2 [(:InstanceId instance)])
+          :on-error
+          :max-retries 3
+          :default nil)))))
 
 
 
@@ -193,7 +197,7 @@
 (defn killer-run
   [{:keys [run-cycle] :as cfg} group]
   (let [filters  (get-in cfg [:groups group :targets])
-        selector (random-selection-by-rate DEFAULT-CONFIG group)
+        selector (random-selection-by-rate cfg group)
         sleep*   (sleeper :fix run-cycle)]
     (println "Killer on the run, press CTRL-c to stop it!")
     (loop []
