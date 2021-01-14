@@ -20,7 +20,7 @@
                  [com.brunobonacci/mulog               "0.6.2"]
                  [com.brunobonacci/mulog-elasticsearch "0.6.2"]
                  [com.brunobonacci/mulog-cloudwatch    "0.6.2"]
-                 [com.brunobonacci/oneconfig           "0.20.0"]]
+                 [com.brunobonacci/oneconfig           "0.21.0"]]
 
   :global-vars {*warn-on-reflection* true}
 
